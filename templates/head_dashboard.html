@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard старосты</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Dashboard старосты</a>
+    <div class="ml-auto">
+        <span class="navbar-text">{{ head.full_name }}</span>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-danger btn-sm ml-2">Выйти</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h2>Список комнат</h2>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>Комната</th>
+            <th>Дата уборки</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for student in students %}
+            <tr>
+                <td>
+                    {# Фильтрация ФИО, исключая "Не указано" #}
+                    {% set names = student.full_name.split(',') %}
+                    {% set valid_names = [] %}
+                    {% for name in names %}
+                        {% if name.strip() != 'Не указано' %}
+                            {% set _ = valid_names.append(name.strip()) %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ valid_names | join(', ') }}
+                </td>
+                <td>{{ student.number_of_room }}</td>
+                <td>{{ student.date_of_cleaning.strftime('%Y-%m-%d %H:%M') if student.date_of_cleaning else 'Нет уборки' }}</td>
+                <td>
+                    {% if student.status == 'Убрался' %}
+                        <span class="text-success">Убрался</span>
+                    {% elif student.status == 'Ожидает подтверждения' %}
+                        <span class="text-warning">Ожидает подтверждения</span>
+                    {% elif student.status == 'Нет уборки' %}
+                        <span class="text-danger">Нет уборки</span>
+                    {% elif student.status == 'Штраф' %}
+                        <span class="text-danger">Штраф ({{ penalty_days }} дней)</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('update_student_status', student_id=student.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-success btn-sm">Подтвердить уборку</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('cancel_student_cleanup', student_id=student.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-warning btn-sm">Отменить уборку</button>
+                    </form>
+                    <a href="{{ url_for('view_photos', student_id=student.id) }}" class="btn btn-info btn-sm">Посмотреть фото</a>
+                    <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}" style="display:inline;" onsubmit="return confirm('Удалить студента?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Нет записей</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

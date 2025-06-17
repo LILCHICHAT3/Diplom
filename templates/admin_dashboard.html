@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Руководитель общежития</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function formatTimeInput(event) {
+            let input = event.target.value;
+            input = input.replace(/[^\d]/g, '');
+            if (input.length > 4) input = input.slice(0, 4);
+            if (input.length >= 3) input = input.slice(0, 2) + ':' + input.slice(2);
+            else if (input.length === 2) input += ':';
+            event.target.value = input;
+        }
+
+        function handleKeyUp(event) {
+            if (event.key === 'Backspace' || event.key === 'Delete') return;
+            formatTimeInput(event);
+        }
+
+        function handleInput(event) {
+            const input = event.target.value;
+            const colons = input.split(':').length - 1;
+            if (colons > 1) event.target.value = input.replace(/:/g, '');
+            formatTimeInput(event);
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Платформа контроля уборок</a>
+    <div class="ml-auto">
+        <span class="navbar-text">Руководитель общежития</span>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-danger btn-sm ml-2">Выйти</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h2>Настройки общежитий и уборки</h2>
+    <form method="POST" action="{{ url_for('admin_dashboard') }}">
+        <div class="form-group">
+            <label for="dormitory">Общежитие (через запятую):</label>
+            <input type="text" class="form-control" id="dormitory" name="dormitory" required>
+        </div>
+        <div class="form-group">
+            <label for="key">Токен бота:</label>
+            <input type="text" class="form-control" id="key" name="key" value="{{ cleaning_settings.key }}" required>
+        </div>
+        <div class="form-group">
+            <label for="cleaning_time">Час уборки (24-часовой формат):</label>
+            <input type="text" class="form-control" id="time_cleaning" name="time_cleaning" placeholder="HH:MM"
+                   value="{{ cleaning_settings.time_cleaning }}" required oninput="handleInput(event)"
+                   onkeyup="handleKeyUp(event)">
+            <small class="form-text text-muted">Введите время уборки в формате 24 часа, например 17:00.</small>
+        </div>
+        <div class="form-group">
+            <label for="penalty_days">Штраф за пропущенную уборку (в днях):</label>
+            <input type="number" class="form-control" id="penalty_days" name="penalty_days"
+                   value="{{ cleaning_settings.penalty_days }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+    </form>
+
+    <h3 class="mt-4">Общежития</h3>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Общежитие</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if dormitories %}
+        {% for dormitory in dormitories %}
+        <tr>
+            <td>{{ dormitory }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('delete_dormitory') }}">
+                    <input type="hidden" name="dormitory_name" value="{{ dormitory }}">
+                    <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="2" class="text-center">Вы еще не добавили ни одного общежития.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+    <h3 class="mt-4">Старосты</h3>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>Номер общежития</th>
+            <th>Номер этажа</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if heads_of_hostel %}
+        {% for head in heads_of_hostel %}
+        <tr>
+            <td>{{ head.full_name }}</td>
+            <td>{{ head.number_of_dormitory }}</td>
+            <td>{{ head.number_of_floor }}</td>
+            <td>{{ head.status }}</td>
+            <td style="white-space: nowrap;">
+                <form method="POST" action="{{ url_for('update_head_status', id=head.id) }}" style="display:inline;">
+                    <button type="submit"
+                            class="btn btn-{{ 'success' if head.status == 'accepted' else 'warning' }} btn-sm">
+                        {{ 'Подтвердить' if head.status == 'declined' else 'Отменить' }}
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('delete_head', head_id=head.id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="5" class="text-center">Вы еще не добавили ни одного старосту.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

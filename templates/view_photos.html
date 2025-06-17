@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фото уборки</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .photo-thumbnail {
+            cursor: pointer;
+            transition: transform 0.2s; /* Плавный эффект увеличения */
+        }
+        .photo-thumbnail:hover {
+            transform: scale(1.1); /* Увеличиваем изображение при наведении */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Платформа контроля уборок</a>
+        <div class="ml-auto">
+            <span class="navbar-text">{{ current_user.full_name }}</span>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-danger btn-sm ml-2">Выйти</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Фото уборки для студента</h2>
+        <button class="btn btn-secondary mb-3" onclick="window.history.back()">Назад</button>
+        <div class="row">
+            {% for photo in photos %}
+                <div class="col-md-4 mb-3">
+                    <img src="data:image/jpeg;base64,{{ photo.photo | b64encode }}" class="img-fluid photo-thumbnail" alt="Фото уборки"
+                         onclick="openModal({{ loop.index0 }})">
+                </div>
+            {% endfor %}
+        </div>
+        {% if not photos %}
+            <p class="text-center">Фото не найдены.</p>
+        {% endif %}
+    </div>
+
+    <!-- Модальное окно для просмотра фото -->
+    <div class="modal fade" id="photoModal" tabindex="-1" role="dialog" aria-labelledby="photoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="photoModalLabel">Фото уборки</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" class="img-fluid" alt="Фото уборки">
+                    <div class="mt-3">
+                        <button id="prevButton" class="btn btn-secondary" onclick="changePhoto(-1)">Предыдущее</button>
+                        <button id="nextButton" class="btn btn-secondary" onclick="changePhoto(1)">Следующее</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPhotoIndex = 0;
+        let photos = [];
+
+        function openModal(index) {
+            currentPhotoIndex = index; // Устанавливаем текущий индекс
+            photos = [{% for photo in photos %}"{{ photo.photo | b64encode }}"{% if not loop.last %}, {% endif %}{% endfor %}]; // Собираем все фото в массив
+            updateModalImage();
+            $('#photoModal').modal('show');  // Показываем модальное окно
+        }
+
+        function updateModalImage() {
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = "data:image/jpeg;base64," + photos[currentPhotoIndex];  // Устанавливаем источник изображения
+            document.getElementById('prevButton').style.display = currentPhotoIndex === 0 ? 'none' : 'inline-block';
+            document.getElementById('nextButton').style.display = currentPhotoIndex === photos.length - 1 ? 'none' : 'inline-block';
+        }
+
+        function changePhoto(direction) {
+            currentPhotoIndex += direction; // Изменяем индекс
+            updateModalImage(); // Обновляем изображение
+        }
+    </script>
+</body>
+</html>

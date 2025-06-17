@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Бот платформа: Главная</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="{{ url_for('static', filename='css/all.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/sb-admin-2.min.css') }}" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/main"
+           style="margin-top: 60px;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <img src="{{ url_for('static', filename='source/chatbot-1.png') }}" alt="Chat Bot Icon"
+                     class="sidebar-brand-icon"
+                     style="width: 80px; height: 80px;">
+                <div class="sidebar-brand-text mx-3" style="margin-top: 10px; margin-bottom: 55px;">Chat-Bot Admin</div>
+            </div>
+        </a>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider my-0">
+        <!-- Nav Item - Dashboard -->
+        <li class="nav-item active">
+            <a class="nav-link" href="/main">
+                <span>Главная</span>
+            </a>
+        </li>
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Управление ботами
+        </div>
+        <!-- Nav Item - Pages Collapse Menu -->
+        <li class="nav-item">
+            <a class="nav-link" href="/add_bots">
+                <span>Добавить бота</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Utilities Collapse Menu -->
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="toggleBotManagement()">
+                <span>Удалить бота</span>
+            </a>
+        </li>
+
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Информация
+        </div>
+        <!-- Nav Item - Pages Collapse Menu -->
+        <li class="nav-item">
+            <a class="nav-link " href="/common_stat">
+                <span>Статистика</span>
+            </a>
+        </li>
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block">
+        <!-- Sidebar Message -->
+        <li class="nav-item">
+    {% if current_user.is_superuser %}
+        <a class="nav-link" href="/user_management">
+            <span>Управление пользователями</span>
+        </a>
+    {% endif %}
+</li>
+<li class="nav-item">
+            <a class="nav-link " href="/logout">
+                <span>Выйти</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper">
+        <!-- Main Content -->
+        <div id="content">
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <!-- Topbar Search -->
+                <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                    <div class="input-group">
+                       <input type="text" id="searchInput" class="form-control bg-light border-0 small" placeholder="Поиск...">
+
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">
+                                <img src="{{ url_for('static', filename='source/search.png') }}" alt="Поиск"
+                                     style="width: 25px; height: 25px;">
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Получаем элементы из DOM
+        var searchInput = document.getElementById("searchInput");
+        var botCards = document.querySelectorAll(".col-lg-4.mb-4");
+
+        // Добавляем обработчик события на ввод в поле поиска
+        searchInput.addEventListener("input", function () {
+            var searchTerm = searchInput.value.toLowerCase();
+
+            // Перебираем все карточки и скрываем/отображаем их в зависимости от совпадения с поисковым запросом
+            botCards.forEach(function (botCard) {
+                var botName = botCard.querySelector("p").textContent.toLowerCase();
+                if (botName.includes(searchTerm)) {
+                    botCard.style.display = "block";
+                } else {
+                    botCard.style.display = "none";
+                }
+            });
+        });
+    });
+</script>
+
+                <!-- Topbar Navbar -->
+                <ul class="navbar-nav ml-auto">
+    <span class="navbar-text">
+        Главная страница
+    </span>
+                    <div class="topbar-divider d-none d-sm-block"></div>
+                    <span class="navbar-text">
+        Добро пожаловать,
+        {% if current_user.is_authenticated %}
+            {% set name_parts = current_user.full_name.split(' ') %}
+            {% if name_parts|length >= 3 %}
+                {{ name_parts[1] }} {{ name_parts[2] }}
+            {% else %}
+                {{ current_user.full_name }}
+            {% endif %}
+        {% endif %}
+    </span>
+                </ul>
+
+            </nav>
+            <!-- End of Topbar -->
+
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+                <!-- Page Heading -->
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">Список ботов</h1>
+                    <button type="button" class="btn btn-danger delete-buttons" id="deleteAllButton"
+                            style="display: none;"
+                            onclick="deleteAllBots()">Удалить всех ботов
+                    </button>
+
+                </div>
+
+                <!-- Content Row -->
+                <div class="row">
+                    {% if bot_data %}
+                    {% for bot in bot_data %}
+                    <div class="col-lg-4 mb-4">
+                        <div class="card shadow">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Управление ботом</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-4">
+                                    <h5 class="font-weight-bold">Название бота:</h5>
+                                    <p>{{ bot.name_table }}</p>
+                                </div>
+                                <div class="mb-4">
+                                    <h5 class="font-weight-bold">Описание бота:</h5>
+                                    <p>{{ bot.description }}</p>
+                                </div>
+                                <div class="btn-group" role="group" aria-label="Bot Management">
+                                    <button type="button" class="btn btn-primary btn-edit {{ bot.name_table }}"
+                                            onclick="openEditPage('{{ bot.name_table }}')">Изменить
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-statistic {{ bot.name_table }}"
+                                            onclick="openBotStatistic('{{ bot.name_table }}')">Статистика бота
+                                    </button>
+                                    <div class="custom-control custom-checkbox mt-2 confirmation-checkbox"
+                                         style="display: none;">
+                                        <input type="checkbox" class="custom-control-input"
+                                               id="deleteCheckbox_{{ bot.name_table }}">
+                                        <label class="custom-control-label" for="deleteCheckbox_{{ bot.name_table }}">Подтвердить
+                                            удаление</label>
+                                    </div>
+
+                                    <button type="button" class="btn btn-danger bot-delete-trigger rounded"
+                                            id="deleteButton_{{ bot.name_table }}"
+                                            style="display: none;" onclick="deleteBot('{{ bot.name_table }}')">Удалить
+                                    </button>
+                                </div>
+                                <button type="button"
+                                        class="btn btn-telegram float-right btn-telegram {{ bot.name_table }}"
+                                        onclick="openTelegram('{{ bot.link }}')">
+                                    <img src="{{ url_for('static', filename='source/telegram.png') }}" alt="Telegram">
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="col-lg-12 mb-4">
+                        <div class="alert alert-info">
+                            На данный момент у вас нет созданных ботов. Для начала, создайте бота.
+                        </div>
+                        <a href="/add_bots" class="btn btn-primary">Создать бота</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+
+                <script>
+
+                    function deleteAllBots() {
+                        // Ваш текущий код удаления всех ботов...
+
+                        // После успешного удаления всех ботов, обновите страницу
+                        fetch('/delete_all_bots', {
+                            method: 'POST',
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    // Выводите сообщение об успешном удалении (если нужно)
+                                    console.log('All bots deleted successfully');
+
+                                    // Обновите страницу
+                                    window.location.reload();
+                                } else {
+                                    // Выводите сообщение об ошибке (если нужно)
+                                    console.error('Error deleting all bots:', data.message);
+                                }
+                            })
+                            .catch(error => {
+                                // Выводите сообщение об ошибке (если нужно)
+                                console.error('Error:', error);
+                            });
+                    }
+
+                    // JavaScript-функция для удаления бота
+                    function deleteBot(botName) {
+                        // Опционально, вы можете запросить подтверждение от пользователя перед удалением
+                        var confirmation = confirm("Вы уверены, что хотите удалить бота " + botName + "?");
+
+                        if (confirmation) {
+                            // Если пользователь подтвердил удаление, отправляем запрос на сервер
+                            fetch('/delete_bot/' + encodeURIComponent(botName), {
+                                method: 'POST',
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    // Обработка ответа, если необходимо
+                                    console.log(data);
+                                    // Дополнительные действия после удаления бота
+                                    window.location.reload();
+                                })
+                                .catch(error => {
+                                    console.error('Ошибка удаления бота:', error);
+                                });
+                        }
+                    }
+
+                    // Инициализируем переменные для отслеживания состояния переключателя и изначального стиля кнопки телеграм
+                    var isDeleteMode = false;
+                    var initialTelegramStyle = '';
+
+                    function toggleBotManagement() {
+                        // Получаем все элементы с классом 'btn-edit', 'btn-statistic' и 'btn-telegram'
+                        var editButtons = document.querySelectorAll('.btn-edit');
+                        var statisticButtons = document.querySelectorAll('.btn-statistic');
+                        var telegramButtons = document.querySelectorAll('.btn-telegram');
+
+                        // Получаем все элементы с классом 'bot-delete-trigger'
+                        var deleteButtons = document.querySelectorAll('.bot-delete-trigger');
+                        var deleteButtonsAll = document.querySelectorAll('.delete-buttons');
+                        // Получаем чекбоксы подтверждения удаления
+                        // var confirmationCheckboxes = document.querySelectorAll('.confirmation-checkbox');
+
+                        // Изменяем состояние переключателя
+                        isDeleteMode = !isDeleteMode;
+
+                        // Устанавливаем видимость кнопок и чекбоксов в зависимости от текущего состояния
+                        deleteButtons.forEach(function (button) {
+                            button.style.display = isDeleteMode ? 'block' : 'none';
+                        });
+
+                        deleteButtonsAll.forEach(function (button) {
+                            button.style.display = isDeleteMode ? 'block' : 'none';
+                        });
+
+                        // confirmationCheckboxes.forEach(function (checkbox) {
+                        //     checkbox.style.display = isDeleteMode ? 'block' : 'none';
+                        // });
+
+                        // Возвращаем видимость кнопок изменить, статистика и телеграм
+                        editButtons.forEach(function (button) {
+                            button.style.display = isDeleteMode ? 'none' : 'block';
+                        });
+
+                        statisticButtons.forEach(function (button) {
+                            button.style.display = isDeleteMode ? 'none' : 'block';
+                        });
+
+                        if (!isDeleteMode) {
+                            // Возвращаем кнопке Телеграм ее изначальный стиль
+                            telegramButtons.forEach(function (button) {
+                                button.style = initialTelegramStyle;
+                            });
+                        } else {
+                            // Сохраняем изначальный стиль кнопки Телеграм
+                            telegramButtons.forEach(function (button) {
+                                initialTelegramStyle = button.style.cssText;
+                                button.style.display = isDeleteMode ? 'none' : 'block';
+                            });
+                        }
+                    }
+
+                    function openEditPage(botName) {
+                        // Перенаправляет на страницу редактирования бота с передачей названия
+                        window.location.href = '/edit_bot?bot_name=' + encodeURIComponent(botName);
+                    }
+
+                    function openBotStatistic(botName) {
+                        // Перенаправляет на страницу редактирования бота с передачей названия
+                        window.location.href = '/bot_statistic?bot_name=' + encodeURIComponent(botName);
+                    }
+
+
+                </script>
+
+                <script>
+                    function openTelegram(link) {
+                        // Открывает ссылку в новом окне
+                        window.open(link);
+                    }
+                </script>
+
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Content Column -->
+                    <div class="col-lg-6 mb-4">
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                    </div>
+                </div>
+            </div>
+            <!-- /.container-fluid -->
+        </div>
+        <!-- End of Main Content -->
+
+        <!-- End of Footer -->
+    </div>
+    <!-- End of Content Wrapper -->
+</div>
+<!-- End of Page Wrapper -->
+</body>
+
+</html>

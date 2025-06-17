@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в платформу</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            margin-top: 100px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px; /* Ограничение максимальной ширины */
+            width: 100%; /* Сделать форму адаптивной */
+        }
+
+        h1 {
+            color: #007bff; /* Синий цвет заголовка */
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Войти в платформу</h1>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label(class="font-weight-bold") }}
+            {{ form.username(class="form-control", placeholder="ФИО пользователя") }}
+            {% for error in form.username.errors %}
+            <span class="error-message">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.password.label(class="font-weight-bold") }}
+            {{ form.password(class="form-control", id="password", placeholder="Пароль") }}
+            {% for error in form.password.errors %}
+            <span class="error-message">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Войти</button>
+    </form>
+    <div class="register-link text-center mt-3">
+        <p>Нет аккаунта? <a href="{{ url_for('admin_register') }}">Зарегистрироваться</a></p>
+    </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li class="error-message">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+</div>
+</body>
+</html>
